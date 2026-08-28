@@ -8,7 +8,7 @@ export default function App() {
 
   const handleAddGuitar = (newGuitar) => {
     setGuitars((prev) => [...prev, newGuitar]);
-    setSelectedGuitar(newGuitar); // Automatically select newly created entry
+    setSelectedGuitar(newGuitar);
   };
 
   return (

@@ -1,54 +1,8 @@
 import React, { useState } from 'react';
-import {
-  useReactTable,
-  getCoreRowModel,
-  getPaginationRowModel,
-  flexRender,
-} from '@tanstack/react-table';
 
 export default function GuitarTable({ data, selectedGuitar, onSelectGuitar }) {
-  const [pagination, setPagination] = useState({
-    pageIndex: 0,
-    pageSize: 5, // Set to 5 rows per page
-  });
-
-  const columns = [
-    {
-      header: 'Guitar Model',
-      accessorKey: 'model',
-    },
-    {
-      header: 'Body Type',
-      accessorKey: 'bodyType',
-    },
-    {
-      header: 'Brand',
-      accessorKey: 'brand',
-    },
-    {
-      header: 'Stock',
-      accessorKey: 'stock',
-    },
-    {
-      header: 'Manufacturer',
-      accessorKey: 'manufacturer',
-    },
-    {
-      header: 'Role',
-      accessorKey: 'userRole',
-    },
-  ];
-
-  const table = useReactTable({
-    data,
-    columns,
-    state: {
-      pagination,
-    },
-    onPaginationChange: setPagination,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-  });
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 5;
 
   if (data.length === 0) {
     return (
@@ -58,6 +12,11 @@ export default function GuitarTable({ data, selectedGuitar, onSelectGuitar }) {
     );
   }
 
+  // Pagination Logic
+  const totalPages = Math.ceil(data.length / pageSize) || 1;
+  const startIndex = (currentPage - 1) * pageSize;
+  const currentData = data.slice(startIndex, startIndex + pageSize);
+
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
       <h2 className="text-xl font-bold mb-4 text-gray-800">Registry Table View</h2>
@@ -65,32 +24,32 @@ export default function GuitarTable({ data, selectedGuitar, onSelectGuitar }) {
       <div className="overflow-x-auto">
         <table className="w-full border-collapse border border-gray-200 text-left text-sm">
           <thead className="bg-gray-100">
-            {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <th key={header.id} className="border p-3 font-semibold text-gray-700">
-                    {flexRender(header.column.columnDef.header, header.getContext())}
-                  </th>
-                ))}
-              </tr>
-            ))}
+            <tr>
+              <th className="border p-3 font-semibold text-gray-700">Guitar Model</th>
+              <th className="border p-3 font-semibold text-gray-700">Body Type</th>
+              <th className="border p-3 font-semibold text-gray-700">Brand</th>
+              <th className="border p-3 font-semibold text-gray-700">Stock</th>
+              <th className="border p-3 font-semibold text-gray-700">Manufacturer</th>
+              <th className="border p-3 font-semibold text-gray-700">Role</th>
+            </tr>
           </thead>
           <tbody>
-            {table.getRowModel().rows.map((row) => {
-              const isSelected = selectedGuitar?.id === row.original.id;
+            {currentData.map((item) => {
+              const isSelected = selectedGuitar?.id === item.id;
               return (
                 <tr
-                  key={row.id}
-                  onClick={() => onSelectGuitar(row.original)}
+                  key={item.id}
+                  onClick={() => onSelectGuitar(item)}
                   className={`cursor-pointer transition-colors ${
                     isSelected ? 'bg-blue-100 hover:bg-blue-200' : 'hover:bg-gray-50'
                   }`}
                 >
-                  {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="border p-3 text-gray-600">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </td>
-                  ))}
+                  <td className="border p-3 text-gray-600">{item.model}</td>
+                  <td className="border p-3 text-gray-600">{item.bodyType}</td>
+                  <td className="border p-3 text-gray-600">{item.brand}</td>
+                  <td className="border p-3 text-gray-600">{item.stock}</td>
+                  <td className="border p-3 text-gray-600">{item.manufacturer}</td>
+                  <td className="border p-3 text-gray-600">{item.userRole}</td>
                 </tr>
               );
             })}
@@ -101,20 +60,20 @@ export default function GuitarTable({ data, selectedGuitar, onSelectGuitar }) {
       {/* Pagination Controls */}
       <div className="flex items-center justify-between mt-4">
         <div className="text-sm text-gray-600">
-          Page <span className="font-semibold">{table.getState().pagination.pageIndex + 1}</span> of{' '}
-          <span className="font-semibold">{table.getPageCount() || 1}</span>
+          Page <span className="font-semibold">{currentPage}</span> of{' '}
+          <span className="font-semibold">{totalPages}</span>
         </div>
         <div className="flex gap-2">
           <button
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
             className="px-3 py-1 text-sm bg-gray-200 rounded disabled:opacity-50 hover:bg-gray-300 font-medium"
           >
             Previous
           </button>
           <button
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
             className="px-3 py-1 text-sm bg-gray-200 rounded disabled:opacity-50 hover:bg-gray-300 font-medium"
           >
             Next
@@ -122,7 +81,7 @@ export default function GuitarTable({ data, selectedGuitar, onSelectGuitar }) {
         </div>
       </div>
 
-      {/* Active Selected Entry Display */}
+      {/* Selected Item View */}
       {selectedGuitar && (
         <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
           <h3 className="font-bold text-blue-800">Active Selected Item:</h3>
