@@ -41,7 +41,7 @@ export default function GuitarTable({ data, selectedGuitar, onSelectGuitar }) {
             }}
             className="px-3 py-1 border rounded-md text-sm bg-gray-50 text-gray-700 font-medium focus:ring-2 focus:ring-blue-500 outline-none"
           >
-            <option value="ALL">All Roles</option>
+            <option value="All">All Roles</option>
             <option value="Admin">Admin</option>
             <option value="Manager">Manager</option>
             <option value="Staff">Staff</option>
