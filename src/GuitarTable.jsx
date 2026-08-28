@@ -1,8 +1,16 @@
 import React, { useState } from 'react';
+import GuitarDetailCard from './GuitarDetailCard';
 
 export default function GuitarTable({ data, selectedGuitar, onSelectGuitar }) {
   const [currentPage, setCurrentPage] = useState(1);
+  const [filterRole, setFilterRole] = useState('ALL'); // State for filtering records
   const pageSize = 5;
+
+  // Filter Control Logic
+  const filteredData = data.filter((item) => {
+    if (filterRole === 'ALL') return true;
+    return item.userRole?.toUpperCase() === filterRole.toUpperCase();
+  });
 
   if (data.length === 0) {
     return (
@@ -12,14 +20,34 @@ export default function GuitarTable({ data, selectedGuitar, onSelectGuitar }) {
     );
   }
 
-  // Pagination Logic
-  const totalPages = Math.ceil(data.length / pageSize) || 1;
+  // Pagination Logic using filtered dataset
+  const totalPages = Math.ceil(filteredData.length / pageSize) || 1;
   const startIndex = (currentPage - 1) * pageSize;
-  const currentData = data.slice(startIndex, startIndex + pageSize);
+  const currentData = filteredData.slice(startIndex, startIndex + pageSize);
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-xl font-bold mb-4 text-gray-800">Registry Table View</h2>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
+        <h2 className="text-xl font-bold text-gray-800">Registry Table View</h2>
+        
+        {/* Toggle / Filter Control */}
+        <div className="flex items-center gap-2">
+          <label className="text-xs font-semibold text-gray-600">Filter by Role:</label>
+          <select
+            value={filterRole}
+            onChange={(e) => {
+              setFilterRole(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="px-3 py-1 border rounded-md text-sm bg-gray-50 text-gray-700 font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+          >
+            <option value="ALL">All Roles</option>
+            <option value="Admin">Admin</option>
+            <option value="Manager">Manager</option>
+            <option value="Staff">Staff</option>
+          </select>
+        </div>
+      </div>
 
       <div className="overflow-x-auto">
         <table className="w-full border-collapse border border-gray-200 text-left text-sm">
@@ -34,25 +62,33 @@ export default function GuitarTable({ data, selectedGuitar, onSelectGuitar }) {
             </tr>
           </thead>
           <tbody>
-            {currentData.map((item) => {
-              const isSelected = selectedGuitar?.id === item.id;
-              return (
-                <tr
-                  key={item.id}
-                  onClick={() => onSelectGuitar(item)}
-                  className={`cursor-pointer transition-colors ${
-                    isSelected ? 'bg-blue-100 hover:bg-blue-200' : 'hover:bg-gray-50'
-                  }`}
-                >
-                  <td className="border p-3 text-gray-600">{item.model}</td>
-                  <td className="border p-3 text-gray-600">{item.bodyType}</td>
-                  <td className="border p-3 text-gray-600">{item.brand}</td>
-                  <td className="border p-3 text-gray-600">{item.stock}</td>
-                  <td className="border p-3 text-gray-600">{item.manufacturer}</td>
-                  <td className="border p-3 text-gray-600">{item.userRole}</td>
-                </tr>
-              );
-            })}
+            {currentData.length > 0 ? (
+              currentData.map((item) => {
+                const isSelected = selectedGuitar?.id === item.id;
+                return (
+                  <tr
+                    key={item.id}
+                    onClick={() => onSelectGuitar(item)}
+                    className={`cursor-pointer transition-colors ${
+                      isSelected ? 'bg-blue-100 hover:bg-blue-200 font-semibold' : 'hover:bg-gray-50'
+                    }`}
+                  >
+                    <td className="border p-3 text-gray-600">{item.model}</td>
+                    <td className="border p-3 text-gray-600">{item.bodyType}</td>
+                    <td className="border p-3 text-gray-600">{item.brand}</td>
+                    <td className="border p-3 text-gray-600">{item.stock}</td>
+                    <td className="border p-3 text-gray-600">{item.manufacturer}</td>
+                    <td className="border p-3 text-gray-600">{item.userRole}</td>
+                  </tr>
+                );
+              })
+            ) : (
+              <tr>
+                <td colSpan="6" className="border p-4 text-center text-gray-400">
+                  No records matching the selected role filter.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -81,15 +117,8 @@ export default function GuitarTable({ data, selectedGuitar, onSelectGuitar }) {
         </div>
       </div>
 
-      {/* Selected Item View */}
-      {selectedGuitar && (
-        <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
-          <h3 className="font-bold text-blue-800">Active Selected Item:</h3>
-          <p className="text-sm text-blue-700 mt-1">
-            <strong>{selectedGuitar.brand} {selectedGuitar.model}</strong> ({selectedGuitar.bodyType}) — Stock: {selectedGuitar.stock} | Mfr: {selectedGuitar.manufacturer} ({selectedGuitar.userRole})
-          </p>
-        </div>
-      )}
+      {/* Active Item Detail Profile Component */}
+      <GuitarDetailCard selectedGuitar={selectedGuitar} />
     </div>
   );
 }
